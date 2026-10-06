@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCD Clinical Guide · Interactive Decision Tool</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #0b2b3c;
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+        }
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .logo h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: #0b2b3c;
+        }
+        .logo span {
+            background: #0d9488;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            letter-spacing: 0.02em;
+        }
+        .badge-kdigo {
+            background: #e6f7f5;
+            color: #0d6b5e;
+            padding: 0.4rem 1rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid #b2e3dc;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 1.8rem;
+            align-items: start;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 8px 20px rgba(0, 30, 30, 0.05);
+            border: 1px solid #e2f0ed;
+            padding: 1.8rem;
+            transition: all 0.15s ease;
+        }
+
+        .step-indicator {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.8rem;
+            flex-wrap: wrap;
+        }
+        .step-pill {
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.4rem 1rem;
+            background: #f0f7f6;
+            border-radius: 30px;
+            color: #2c6b63;
+            transition: all 0.1s;
+            border: 1px solid transparent;
+        }
+        .step-pill.active {
+            background: #0d9488;
+            color: white;
+            font-weight: 600;
+            border-color: #0d9488;
+        }
+
+        .question {
+            font-size: 1.35rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            color: #0b2b3c;
+            letter-spacing: -0.01em;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: #ffffff;
+            border: 1.5px solid #d9ece8;
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #0b2b3c;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: left;
+            font-family: inherit;
+            width: 100%;
+        }
+        .option-btn:hover {
+            background: #f2fcf9;
+            border-color: #0d9488;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(13, 148, 136, 0.08);
+        }
+        .option-btn.selected {
+            background: #e6f7f5;
+            border-color: #0d9488;
+            box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
+        }
+        .option-icon {
+            font-size: 1.3rem;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 0.9rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-primary {
+            background: #0d9488;
+            color: white;
+            box-shadow: 0 4px 10px rgba(13, 148, 136, 0.25);
+        }
+        .btn-primary:hover {
+            background: #0b7e6f;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(13, 148, 136, 0.3);
+        }
+        .btn-primary:disabled {
+            background: #b0ccc8;
+            box-shadow: none;
+            transform: none;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: white;
+            border: 1.5px solid #cfe2de;
+            color: #1e5f57;
+        }
+        .btn-secondary:hover {
+            background: #f5fdfb;
+            border-color: #0d9488;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .info-box {
+            background: #f5fdfb;
+            border-left: 4px solid #0d9488;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin: 1.25rem 0 0.5rem;
+            font-size: 0.9rem;
+            color: #1a4e48;
+        }
+        .info-box.warning {
+            background: #fffbeb;
+            border-left-color: #e6b422;
+            color: #7a5c0f;
+        }
+
+        .treatment-panel {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid #d9ece8;
+            margin-top: 1.25rem;
+        }
+
+        .treatment-panel h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .drug-card {
+            background: #f9fffe;
+            border-radius: 16px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 0.8rem;
+            border-left: 5px solid #0d9488;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .drug-card strong {
+            display: block;
+            font-size: 1.02rem;
+            margin-bottom: 0.3rem;
+            color: #0b3b35;
+        }
+        .drug-card .meta {
+            font-size: 0.85rem;
+            color: #2b6b63;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+        .drug-card .meta span {
+            background: #e2f2ef;
+            padding: 0.2rem 0.7rem;
+            border-radius: 30px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .sidebar-card {
+            background: white;
+            border-radius: 24px;
+            padding: 1.5rem 1.4rem;
+            border: 1px solid #e2f0ed;
+            box-shadow: 0 8px 20px rgba(0, 30, 30, 0.03);
+        }
+        .sidebar-card h4 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #2c6b63;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        .algorithm-step {
+            font-size: 0.88rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #d0e5e0;
+            display: flex;
+            gap: 0.6rem;
+        }
+        .algorithm-step:last-child {
+            border-bottom: none;
+        }
+        .step-num {
+            background: #d9f0eb;
+            color: #0b5f55;
+            width: 22px;
+            height: 22px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .ref-note {
+            font-size: 0.75rem;
+            color: #6b8f89;
+            margin-top: 1.2rem;
+            border-top: 1px solid #d9ece8;
+            padding-top: 0.8rem;
+        }
+
+        .summary-badge {
+            background: #fef9e7;
+            color: #8a6d1f;
+            border-radius: 12px;
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            border-left: 4px solid #e6b422;
+        }
+
+        @media (max-width: 860px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            body {
+                padding: 1.2rem;
+            }
+            .logo h1 {
+                font-size: 1.3rem;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .reset-link {
+            color: #0d9488;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            padding: 0.25rem 0;
+        }
+
+        .mt-2 { margin-top: 0.8rem; }
+        .mt-3 { margin-top: 1.5rem; }
+
+        .badge-red {
+            background: #fee2e2;
+            color: #991b1b;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+        }
+
+        .evidence-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.15rem 0.6rem;
+            border-radius: 20px;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .evidence-rct {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        .evidence-obs {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+        .evidence-mixed {
+            background: #f3e8ff;
+            color: #6b21a8;
+            border: 1px solid #d8b4fe;
+        }
+
+        /* Comparison table */
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin: 1rem 0;
+        }
+        .compare-table th {
+            background: #eaf6f3;
+            color: #0b4f45;
+            padding: 0.7rem 0.6rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            border-bottom: 2px solid #b2e3dc;
+        }
+        .compare-table td {
+            padding: 0.7rem 0.6rem;
+            border-bottom: 1px solid #e2f0ed;
+            vertical-align: top;
+        }
+        .compare-table tr:last-child td {
+            border-bottom: none;
+        }
+        .compare-table tr:hover td {
+            background: #f9fffe;
+        }
+        .agent-name {
+            font-weight: 600;
+            color: #0b3b35;
+        }
+        .durability-high {
+            color: #047857;
+            font-weight: 600;
+        }
+        .durability-mid {
+            color: #b45309;
+            font-weight: 600;
+        }
+        .durability-low {
+            color: #b91c1c;
+            font-weight: 600;
+        }
+
+        .bar-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .bar {
+            height: 8px;
+            border-radius: 4px;
+            background: #0d9488;
+            min-width: 4px;
+        }
+        .bar-track {
+            flex: 1;
+            background: #e2f0ed;
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        /* Interactive bar toggle */
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .view-toggle button {
+            background: white;
+            border: 1.5px solid #d9ece8;
+            border-radius: 30px;
+            padding: 0.4rem 1rem;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: #2c6b63;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .view-toggle button.active {
+            background: #0d9488;
+            color: white;
+            border-color: #0d9488;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <header>
+        <div class="logo">
+            <h1>Minimal Change Disease</h1>
+            <span>GUIDE</span>
+        </div>
+        <div class="badge-kdigo">KDIGO 2021 · 2025 Podocytopathy Algorithm · 2025 JAMA RCT · Wong 2024 Meta-analysis</div>
+    </header>
+
+    <div class="main-grid">
+        <!-- Left main interactive panel -->
+        <div class="card" id="mainPanel">
+            <div class="step-indicator" id="stepIndicator">
+                <span class="step-pill active" data-step="1">1 · Clinical context</span>
+                <span class="step-pill" data-step="2">2 · Diagnosis</span>
+                <span class="step-pill" data-step="3">3 · Initial therapy</span>
+                <span class="step-pill" data-step="4">4 · Relapse / FR-SD</span>
+                <span class="step-pill" data-step="5">5 · Compare agents</span>
+            </div>
+
+            <!-- STEP 1: Clinical context -->
+            <div id="step1Content">
+                <div class="question">👤 Who is the patient?</div>
+                <div class="options" id="step1Options">
+                    <button class="option-btn" data-value="adult">
+                        <span class="option-icon">🧑</span> Adult (≥18 years) — new nephrotic syndrome
+                    </button>
+                    <button class="option-btn" data-value="child">
+                        <span class="option-icon">🧒</span> Child — nephrotic syndrome, typical presentation
+                    </button>
+                    <button class="option-btn" data-value="atypical">
+                        <span class="option-icon">⚠️</span> Atypical features / steroid resistance / secondary suspicion
+                    </button>
+                </div>
+                <div class="info-box" id="step1Info">
+                    In adults, MCD can be diagnosed <strong>only with kidney biopsy</strong>. Children are typically treated empirically without initial biopsy.
+                </div>
+            </div>
+
+            <!-- STEP 2: Diagnosis (dynamic) -->
+            <div id="step2Content" class="hidden">
+                <div class="question" id="step2Question">🔬 Diagnostic approach</div>
+                <div id="step2Dynamic"></div>
+            </div>
+
+            <!-- STEP 3: Initial treatment (dynamic) -->
+            <div id="step3Content" class="hidden">
+                <div class="question" id="step3Question">💊 Initial therapy</div>
+                <div id="step3Dynamic"></div>
+            </div>
+
+            <!-- STEP 4: FR/SD (dynamic) -->
+            <div id="step4Content" class="hidden">
+                <div class="question" id="step4Question">🔄 Frequently relapsing / steroid-dependent</div>
+                <div id="step4Dynamic"></div>
+            </div>
+
+            <!-- STEP 5: Compare agents -->
+            <div id="step5Content" class="hidden">
+                <div class="question">⚖️ Compare steroid-sparing agents — durability, remission & safety</div>
+                <div id="step5Dynamic"></div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="button-group mt-3" id="navButtons">
+                <button class="btn-secondary" id="backBtn" disabled>← Back</button>
+                <button class="btn-primary" id="nextBtn" disabled>Continue →</button>
+                <button class="reset-link" id="resetBtn" style="margin-left:auto;">Reset</button>
+            </div>
+        </div>
+
+        <!-- Sidebar / reference panel -->
+        <div class="sidebar">
+            <div class="sidebar-card">
+                <h4>📋 KDIGO algorithm snapshot</h4>
+                <div class="algorithm-step"><span class="step-num">1</span> Basic assessments + secondary causes</div>
+                <div class="algorithm-step"><span class="step-num">2</span> If secondary → targeted treatment</div>
+                <div class="algorithm-step"><span class="step-num">3</span> Serology: anti-PLA2R, anti-nephrin</div>
+                <div class="algorithm-step"><span class="step-num">4</span> Autoantibody positive → steroids / rituximab</div>
+                <div class="algorithm-step"><span class="step-num">5</span> Negative/resistant → kidney biopsy</div>
+                <div class="algorithm-step"><span class="step-num">6</span> Histology: MN, MC, FSGS, collapsing</div>
+                <div class="algorithm-step"><span class="step-num">7</span> Advanced microscopy + genetics if negative</div>
+                <div class="ref-note">2025 Nature Reviews Disease Primers · Podocytopathies</div>
+            </div>
+
+            <div class="sidebar-card">
+                <h4>💡 Key facts</h4>
+                <ul style="list-style: none; font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.7rem;">
+                    <li>🔹 <strong>MCD</strong> = ~10–17% adult nephrotic syndrome</li>
+                    <li>🔹 <strong>Children</strong> &gt;90% of nephrotic cases</li>
+                    <li>🔹 Steroid response <strong>80–95%</strong> adults</li>
+                    <li>🔹 Relapse ~50% → steroid-sparing agents</li>
+                    <li>🔹 Anti-nephrin in <strong>&gt;40%</strong> primary MCD</li>
+                    <li>🔹 <strong>Rituximab:</strong> 2025 JAMA RCT — 87.4% vs 38.0% relapse-free at 49 weeks</li>
+                    <li>🔹 <strong>No head-to-head RCTs</strong> between rituximab, cyclophosphamide, and CNIs in adult FR/SD MCD</li>
+                </ul>
+            </div>
+
+            <div class="sidebar-card" id="summaryCard">
+                <h4>📌 Your pathway</h4>
+                <div id="pathwaySummary" style="font-size: 0.9rem; color: #1a4e48;">
+                    Select patient type to begin.
+                </div>
+                <div class="summary-badge" id="dynamicAdvice">
+                    Complete the steps to see tailored guidance.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ----- STATE -----
+        let currentStep = 1;
+        let patientType = null;
+        let diagnosisChoice = null;
+        let treatmentChoice = null;
+        let relapseChoice = null;
+        let currentCompareView = 'remission'; // 'remission' | 'durability' | 'safety'
+
+        // DOM elements
+        const step1Content = document.getElementById('step1Content');
+        const step2Content = document.getElementById('step2Content');
+        const step3Content = document.getElementById('step3Content');
+        const step4Content = document.getElementById('step4Content');
+        const step5Content = document.getElementById('step5Content');
+        const backBtn = document.getElementById('backBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        const step2Dynamic = document.getElementById('step2Dynamic');
+        const step3Dynamic = document.getElementById('step3Dynamic');
+        const step4Dynamic = document.getElementById('step4Dynamic');
+        const step5Dynamic = document.getElementById('step5Dynamic');
+        const step2Question = document.getElementById('step2Question');
+        const step3Question = document.getElementById('step3Question');
+        const step4Question = document.getElementById('step4Question');
+
+        const pathwaySummary = document.getElementById('pathwaySummary');
+        const dynamicAdvice = document.getElementById('dynamicAdvice');
+
+        function updateStepIndicator(step) {
+            document.querySelectorAll('.step-pill').forEach(pill => {
+                const s = parseInt(pill.dataset.step);
+                if (s === step) pill.classList.add('active');
+                else pill.classList.remove('active');
+            });
+        }
+
+        function showStep(step) {
+            step1Content.classList.add('hidden');
+            step2Content.classList.add('hidden');
+            step3Content.classList.add('hidden');
+            step4Content.classList.add('hidden');
+            step5Content.classList.add('hidden');
+
+            if (step === 1) step1Content.classList.remove('hidden');
+            if (step === 2) step2Content.classList.remove('hidden');
+            if (step === 3) step3Content.classList.remove('hidden');
+            if (step === 4) step4Content.classList.remove('hidden');
+            if (step === 5) step5Content.classList.remove('hidden');
+
+            updateStepIndicator(step);
+            currentStep = step;
+            updateNavButtons();
+            updatePathwaySummary();
+        }
+
+        function resetAll() {
+            patientType = null;
+            diagnosisChoice = null;
+            treatmentChoice = null;
+            relapseChoice = null;
+            currentCompareView = 'remission';
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+            step2Dynamic.innerHTML = '';
+            step3Dynamic.innerHTML = '';
+            step4Dynamic.innerHTML = '';
+            step5Dynamic.innerHTML = '';
+            showStep(1);
+            backBtn.disabled = true;
+            nextBtn.disabled = true;
+            pathwaySummary.innerHTML = 'Select patient type to begin.';
+            dynamicAdvice.textContent = 'Complete the steps to see tailored guidance.';
+        }
+
+        function updateNavButtons() {
+            backBtn.disabled = (currentStep === 1);
+
+            let canProceed = false;
+            if (currentStep === 1) canProceed = !!patientType;
+            else if (currentStep === 2) canProceed = !!diagnosisChoice;
+            else if (currentStep === 3) canProceed = !!treatmentChoice;
+            else if (currentStep === 4) canProceed = true;
+
+            if (currentStep === 5) {
+                nextBtn.disabled = true;
+                nextBtn.textContent = 'End of pathway';
+            } else if (currentStep === 4) {
+                nextBtn.disabled = false;
+                nextBtn.textContent = 'Compare agents →';
+            } else {
+                nextBtn.disabled = !canProceed;
+                nextBtn.textContent = 'Continue →';
+            }
+        }
+
+        function updatePathwaySummary() {
+            let summary = '';
+            if (patientType === 'adult') summary += '👤 Adult · ';
+            else if (patientType === 'child') summary += '🧒 Child · ';
+            else if (patientType === 'atypical') summary += '⚠️ Atypical · ';
+            else summary = 'Not selected';
+
+            if (diagnosisChoice) summary += `🔬 ${diagnosisChoice} · `;
+            if (treatmentChoice) summary += `💊 ${treatmentChoice} · `;
+            if (relapseChoice) summary += `🔄 ${relapseChoice}`;
+
+            pathwaySummary.innerHTML = summary || 'Select patient type to begin.';
+
+            if (!patientType) {
+                dynamicAdvice.textContent = 'Select patient type to begin.';
+            } else if (patientType === 'adult' && !diagnosisChoice) {
+                dynamicAdvice.textContent = 'Adult: kidney biopsy required for diagnosis.';
+            } else if (patientType === 'child' && !diagnosisChoice) {
+                dynamicAdvice.textContent = 'Child: typical presentation → empiric steroids, no initial biopsy.';
+            } else if (diagnosisChoice === 'biopsy-confirmed' && !treatmentChoice) {
+                dynamicAdvice.textContent = 'Biopsy confirmed MCD → high-dose steroids first-line.';
+            } else if (treatmentChoice === 'steroid-contraindication') {
+                dynamicAdvice.textContent = 'Relative contraindication → consider cyclophosphamide, CNI, or MMF.';
+            } else if (relapseChoice === 'FR-SD') {
+                dynamicAdvice.textContent = 'FR/SD → steroid-sparing immunosuppression.';
+            } else if (relapseChoice === 'rituximab') {
+                dynamicAdvice.textContent = 'Rituximab: RCT evidence + most durable; maintenance redosing improves outcomes.';
+            } else if (currentStep === 5) {
+                dynamicAdvice.textContent = 'No head-to-head RCTs — comparisons are observational. Durability: rituximab ≈ cyclophosphamide > CNIs.';
+            } else {
+                dynamicAdvice.textContent = 'Follow pathway for tailored recommendations.';
+            }
+        }
+
+        // ---------- STEP 1 ----------
+        document.querySelectorAll('#step1Options .option-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#step1Options .option-btn').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                patientType = this.dataset.value;
+                diagnosisChoice = null;
+                treatmentChoice = null;
+                relapseChoice = null;
+                step2Dynamic.innerHTML = '';
+                step3Dynamic.innerHTML = '';
+                step4Dynamic.innerHTML = '';
+                step5Dynamic.innerHTML = '';
+                updateNavButtons();
+                updatePathwaySummary();
+            });
+        });
+
+        // ---------- STEP 2 ----------
+        function buildStep2() {
+            step2Dynamic.innerHTML = '';
+            if (patientType === 'adult') {
+                step2Question.textContent = '🔬 Adult with nephrotic syndrome — diagnostic approach';
+                step2Dynamic.innerHTML = `
+                    <div class="options" id="step2Options">
+                        <button class="option-btn" data-value="biopsy-confirmed">
+                            <span class="option-icon">🧪</span> Kidney biopsy performed → confirms MCD
+                        </button>
+                        <button class="option-btn" data-value="biopsy-pending">
+                            <span class="option-icon">⏳</span> Biopsy pending / not yet done — clinical suspicion
+                        </button>
+                        <button class="option-btn" data-value="secondary-suspected">
+                            <span class="option-icon">🔍</span> Secondary cause suspected (NSAID, malignancy, SLE)
+                        </button>
+                    </div>
+                    <div class="info-box">
+                        <strong>KDIGO:</strong> MCD diagnosed <em>only</em> with kidney biopsy in adults. Light microscopy: normal/minimal mesangial. IF: negative/low C3/IgM. EM: diffuse foot process effacement without deposits.
+                    </div>
+                `;
+            } else if (patientType === 'child') {
+                step2Question.textContent = '🔬 Child with typical nephrotic syndrome';
+                step2Dynamic.innerHTML = `
+                    <div class="options" id="step2Options">
+                        <button class="option-btn" data-value="empiric-steroid">
+                            <span class="option-icon">💊</span> Typical presentation → start empiric corticosteroids (no biopsy)
+                        </button>
+                        <button class="option-btn" data-value="atypical-child">
+                            <span class="option-icon">⚠️</span> Atypical features / steroid resistance → biopsy indicated
+                        </button>
+                    </div>
+                    <div class="info-box">
+                        Children: ~95% achieve remission with steroids. Biopsy reserved for steroid resistance or atypical features.
+                    </div>
+                `;
+            } else if (patientType === 'atypical') {
+                step2Question.textContent = '⚠️ Atypical / secondary / steroid-resistant — workup';
+                step2Dynamic.innerHTML = `
+                    <div class="options" id="step2Options">
+                        <button class="option-btn" data-value="secondary-workup">
+                            <span class="option-icon">🔎</span> Exclude secondary causes (malignancy, NSAIDs, SLE)
+                        </button>
+                        <button class="option-btn" data-value="biopsy-advanced">
+                            <span class="option-icon">🧬</span> Kidney biopsy + advanced microscopy / genetics
+                        </button>
+                    </div>
+                    <div class="info-box">
+                        Always exclude secondary causes: malignancy (thymoma, lymphoma), NSAID use, SLE. Anti-nephrin antibodies in >40% primary MCD.
+                    </div>
+                `;
+            }
+
+            document.querySelectorAll('#step2Options .option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#step2Options .option-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    diagnosisChoice = this.dataset.value;
+                    treatmentChoice = null;
+                    relapseChoice = null;
+                    step3Dynamic.innerHTML = '';
+                    step4Dynamic.innerHTML = '';
+                    step5Dynamic.innerHTML = '';
+                    updateNavButtons();
+                    updatePathwaySummary();
+                });
+            });
+            if (diagnosisChoice) {
+                const pre = document.querySelector(`#step2Options .option-btn[data-value="${diagnosisChoice}"]`);
+                if (pre) pre.classList.add('selected');
+            }
+        }
+
+        // ---------- STEP 3 ----------
+        function buildStep3() {
+            step3Dynamic.innerHTML = '';
+            step3Question.textContent = '💊 Initial treatment selection';
+            let html = '';
+
+            if (diagnosisChoice === 'biopsy-confirmed' || diagnosisChoice === 'empiric-steroid' || diagnosisChoice === 'biopsy-pending' || diagnosisChoice === 'atypical-child' || diagnosisChoice === 'biopsy-advanced' || diagnosisChoice === 'secondary-workup') {
+                html = `
+                    <div class="options" id="step3Options">
+                        <button class="option-btn" data-value="high-dose-steroid">
+                            <span class="option-icon">💊</span> High-dose oral glucocorticoids (prednisone 0.8–1 mg/kg/day)
+                        </button>
+                        <button class="option-btn" data-value="steroid-contraindication">
+                            <span class="option-icon">⚠️</span> Relative contraindication to steroids → consider alternative
+                        </button>
+                        <button class="option-btn" data-value="reduced-dose-steroid">
+                            <span class="option-icon">📉</span> Reduced-dose prednisone + mycophenolate / tacrolimus (steroid-sparing)
+                        </button>
+                    </div>
+                `;
+            }
+
+            if (diagnosisChoice === 'secondary-suspected' || diagnosisChoice === 'secondary-workup') {
+                html = `
+                    <div class="options" id="step3Options">
+                        <button class="option-btn" data-value="treat-secondary">
+                            <span class="option-icon">🎯</span> Treat underlying secondary cause (targeted therapy)
+                        </button>
+                        <button class="option-btn" data-value="high-dose-steroid">
+                            <span class="option-icon">💊</span> If primary MCD suspected → high-dose steroids
+                        </button>
+                    </div>
+                `;
+            }
+
+            if (diagnosisChoice === 'atypical-child') {
+                html = `
+                    <div class="options" id="step3Options">
+                        <button class="option-btn" data-value="biopsy-first">
+                            <span class="option-icon">🧪</span> Biopsy first → then guide therapy
+                        </button>
+                        <button class="option-btn" data-value="high-dose-steroid">
+                            <span class="option-icon">💊</span> Empirical steroids while awaiting biopsy
+                        </button>
+                    </div>
+                `;
+            }
+
+            if (!html) {
+                html = `
+                    <div class="options" id="step3Options">
+                        <button class="option-btn" data-value="high-dose-steroid">
+                            <span class="option-icon">💊</span> High-dose oral glucocorticoids
+                        </button>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div class="info-box">
+                    <strong>KDIGO Rec 5.3.1 (1C):</strong> High-dose glucocorticoids (prednisone ~0.8–1 mg/kg/day, max 60–80 mg) for ≤16 weeks. Taper 2 weeks after complete remission.
+                </div>
+            `;
+
+            step3Dynamic.innerHTML = html;
+
+            document.querySelectorAll('#step3Options .option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#step3Options .option-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    treatmentChoice = this.dataset.value;
+                    relapseChoice = null;
+                    step4Dynamic.innerHTML = '';
+                    step5Dynamic.innerHTML = '';
+                    updateNavButtons();
+                    updatePathwaySummary();
+                });
+            });
+
+            if (treatmentChoice) {
+                const pre = document.querySelector(`#step3Options .option-btn[data-value="${treatmentChoice}"]`);
+                if (pre) pre.classList.add('selected');
+            }
+        }
+
+        // ---------- STEP 4 ----------
+        function buildStep4() {
+            step4Dynamic.innerHTML = '';
+            step4Question.textContent = '🔄 Frequently relapsing / steroid-dependent MCD — steroid-sparing options';
+
+            let html = `
+                <div class="options" id="step4Options">
+                    <button class="option-btn" data-value="cyclophosphamide">
+                        <span class="option-icon">💊</span> <strong>Cyclophosphamide</strong> — traditional second-line; single oral course; avoid >12 weeks
+                    </button>
+                    <button class="option-btn" data-value="CNI">
+                        <span class="option-icon">💊</span> <strong>CNI</strong> (tacrolimus / cyclosporine) — effective; monitor nephrotoxicity
+                    </button>
+                    <button class="option-btn" data-value="rituximab">
+                        <span class="option-icon">💊</span> <strong>Rituximab</strong> — anti-CD20; <span class="evidence-badge evidence-rct">RCT</span> 2025 JAMA RCT level-1 evidence
+                    </button>
+                    <button class="option-btn" data-value="MMF">
+                        <span class="option-icon">💊</span> <strong>MMF / sodium mycophenolate</strong> — effective alternative
+                    </button>
+                </div>
+                <div class="info-box">
+                    All agents achieve ~70–90% remission maintenance. Choice guided by physician/patient preference, toxicity, and fertility considerations. <strong>Rituximab now has randomized trial evidence in adult FR/SD MCD.</strong>
+                </div>
+            `;
+
+            if (patientType === 'child') {
+                html += `
+                    <div class="info-box" style="background: #fef9e7; border-left-color: #e6b422;">
+                        <strong>Children:</strong> cyclophosphamide, CNIs, levamisole, MMF, or rituximab may be used.
+                    </div>
+                `;
+            }
+
+            step4Dynamic.innerHTML = html;
+
+            document.querySelectorAll('#step4Options .option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#step4Options .option-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    relapseChoice = this.dataset.value;
+                    updatePathwaySummary();
+                    updateNavButtons();
+                    showAgentDetail(this.dataset.value);
+                });
+            });
+
+            if (relapseChoice) {
+                const pre = document.querySelector(`#step4Options .option-btn[data-value="${relapseChoice}"]`);
+                if (pre) pre.classList.add('selected');
+                showAgentDetail(relapseChoice);
+            }
+        }
+
+        function showAgentDetail(agent) {
+            const existing = document.getElementById('agentDetail');
+            if (existing) existing.remove();
+
+            const detailDiv = document.createElement('div');
+            detailDiv.className = 'treatment-panel';
+            detailDiv.id = 'agentDetail';
+
+            let content = '';
+            if (agent === 'cyclophosphamide') {
+                content = `
+                    <h3>💊 Cyclophosphamide</h3>
+                    <div class="drug-card">
+                        <strong>Dosing</strong>
+                        <div class="meta"><span>1–2 mg/kg/day PO</span><span>8–12 weeks</span><span>single course</span></div>
+                    </div>
+                    <div class="drug-card">
+                        <strong>Monitoring</strong>
+                        <div class="meta"><span>CBC weekly</span><span>Urinalysis</span><span>Fertility counseling</span></div>
+                    </div>
+                    <div class="drug-card">
+                        <strong>Key toxicities</strong>
+                        <div class="meta"><span>Infertility</span><span>Malignancy</span><span>Myelosuppression</span><span>Hemorrhagic cystitis</span></div>
+                    </div>
+                    <div class="info-box">KDIGO: avoid prolonged (>12 weeks) or repeated courses due to cumulative toxicity and infertility risk. Tends to give more durable remission than CNIs.</div>
+                `;
+            } else if (agent === 'CNI') {
+                content = `
+                    <h3>💊 Calcineurin inhibitors (tacrolimus / cyclosporine)</h3>
+                    <div class="drug-card">
+                        <strong>Tacrolimus</strong>
+                        <div class="meta"><span>0.05–0.1 mg/kg/day</span><span>trough 5–10 ng/mL</span></div>
+                    </div>
+                    <div class="drug-card">
+                        <strong>Cyclosporine</strong>
+                        <div class="meta"><span>3–5 mg/kg/day</span><span>trough 100–200 ng/mL</span></div>
+                    </div>
+                    <div class="drug-card">
+                        <strong>Monitoring</strong>
+                        <div class="meta"><span>Trough levels</span><span>Creatinine/eGFR</span><span>BP</span><span>K⁺, Mg²⁺</span><span>Glucose (tac)</span></div>
+                    </div>
+                    <div class="drug-card">
+                        <strong>Key toxicities</strong>
+                        <div class="meta"><span>Nephrotoxicity</span><span>Hypertension</span><span>Tremor</span><span>Gingival hyperplasia (CsA)</span><span>Diabetes (tac)</span></div>
+                    </div>
+                    <div class="info-box warning">
+                        <strong>Durability caveat:</strong> KDIGO notes CNIs induce remission in 70–90% but <strong>relapse rates are high</strong> and prolonged therapy is often needed because patients relapse during dose reduction. Cumulative nephrotoxicity with long use.
+                    </div>
+                `;
+            } else if (agent === 'rituximab') {
+                content = `
+                    <h3>💊 Rituximab <span class="evidence-badge evidence-rct">RCT</span></h3>
+                    <div class="drug-card" style="border-left-color: #2563eb; background: #f0f7ff;">
+                        <strong>🔬 2025 JAMA RCT — adult FR/SD MCD</strong>
+                        <div class="meta" style="flex-direction: column; gap: 0.4rem;">
+                            <span>66 adults · rituximab 375 mg/m² at weeks 1, 2, and 25 vs placebo</span>
+                            <span><strong>49-week relapse-free: 87.4% rituximab vs 38.0% placebo</strong> (HR 0.16, 95% CI 0.05–0.46)</span>
+                            <span>Benefit held for FRNS, SDNS, and MCNS subgroups — not FSGS or membranous nephropathy</span>
+                        </div>
+                    </div>
+                    <div class="drug-card">
+                        <strong>Common induction protocols</strong>
+                        <div class="meta"><span>375 mg/m² IV weekly ×1–4</span><span>OR 1,000 mg IV ×2</span><span>low-dose: 375 mg/m² ×1–2</span></div>
+                    </div>
+                    <div class="drug-card">
+                        <strong>Maintenance dosing</strong>
+                        <div class="meta"><span>Scheduled redosing (e.g., week 25)</span><span>Relapse/CD19-guided reinduction</span><span>French cohort: HR 0.35 for relapse with maintenance</span></div>
+                    </div>
+                    <div class="drug-card">
+                        <strong>Monitoring</strong>
+                        <div class="meta"><span>CD19/CD20 counts</span><span>Immunoglobulins</span><span>HBsAg/anti-HBc</span></div>
+                    </div>
+                    <div class="drug-card">
+                        <strong>Key toxicities</strong>
+                        <div class="meta"><span>Infusion reactions (~40% RCT)</span><span>Hypogammaglobulinemia → infection risk</span><span>Low IgG: 42% vs 8% infection rate</span><span>Anti-rituximab antibodies ~16%</span><span>PML (rare)</span><span>HBV reactivation</span></div>
+                    </div>
+                    <div class="info-box">
+                        <strong>Evidence-based approach:</strong> Induction with 375 mg/m² (1–2 doses) or 1,000 mg, followed by maintenance or relapse-/CD19-guided redosing. Monitor B cells and immunoglobulins to balance durable remission against infection risk.
+                    </div>
+                `;
+            } else if (agent === 'MMF') {
+                content = `
+                    <h3>💊 Mycophenolate mofetil (MMF) / sodium mycophenolate</h3>
+                    <div class="drug-card">
+                        <strong>Dosing</strong>
+                        <div class="meta"><span>MMF 1–2 g/day PO divided BID</span><span>sodium mycophenolate equivalent</span></div>
+                    </div>
+                    <div class="drug-card">
+                        <strong>Monitoring</strong>
+                        <div class="meta"><span>CBC</span><span>LFTs</span><span>GI tolerance</span></div>
+                    </div>
+                    <div class="drug-card">
+                        <strong>Key toxicities</strong>
+                        <div class="meta"><span>GI upset</span><span>Leukopenia</span><span>Infection</span><span>Teratogenicity</span></div>
+                    </div>
+                    <div class="info-box">Effective alternative. Contraindicated in pregnancy; ensure contraception. Reserved for relapse despite CYC/CNI.</div>
+                `;
+            }
+
+            detailDiv.innerHTML = content;
+            step4Dynamic.appendChild(detailDiv);
+        }
+
+        // ---------- STEP 5: COMPARE AGENTS ----------
+        function buildStep5() {
+            step5Dynamic.innerHTML = '';
+            step5Question.textContent = '⚖️ Compare steroid-sparing agents — durability, remission & safety';
+
+            // View toggle
+            const toggleHtml = `
+                <div class="view-toggle" id="compareToggle">
+                    <button data-view="remission" class="${currentCompareView === 'remission' ? 'active' : ''}">📊 Complete remission</button>
+                    <button data-view="durability" class="${currentCompareView === 'durability' ? 'active' : ''}">⏳ Durability</button>
+                    <button data-view="safety" class="${currentCompareView === 'safety' ? 'active' : ''}">🛡️ Safety / adverse events</button>
+                </div>
+            `;
+
+            // Caveat banner
+            const caveatHtml = `
+                <div class="info-box warning">
+                    <strong>⚠️ Key caveat:</strong> <strong>No head-to-head randomized trials</strong> directly compare rituximab, cyclophosphamide, and CNIs in adult FR/SD MCD. All comparative conclusions rest on observational cohorts, single-arm meta-analysis, and extrapolation from childhood NS and membranous nephropathy.
+                </div>
+            `;
+
+            let tableHtml = '';
+
+            if (currentCompareView === 'remission') {
+                tableHtml = `
+                    <table class="compare-table">
+                        <thead>
+                            <tr>
+                                <th>Agent</th>
+                                <th>Pooled complete remission</th>
+                                <th>Evidence</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="agent-name">Rituximab</td>
+                                <td>
+                                    <div class="bar-container">
+                                        <strong>89%</strong>
+                                        <div class="bar-track"><div class="bar" style="width:89%"></div></div>
+                                    </div>
+                                    <span style="font-size:0.75rem;color:#6b8f89;">95% CI 83–94%</span>
+                                </td>
+                                <td><span class="evidence-badge evidence-rct">RCT</span> <span class="evidence-badge evidence-obs">OBS</span></td>
+                            </tr>
+                            <tr>
+                                <td class="agent-name">Tacrolimus</td>
+                                <td>
+                                    <div class="bar-container">
+                                        <strong>84%</strong>
+                                        <div class="bar-track"><div class="bar" style="width:84%"></div></div>
+                                    </div>
+                                    <span style="font-size:0.75rem;color:#6b8f89;">95% CI 70–98%</span>
+                                </td>
+                                <td><span class="evidence-badge evidence-obs">OBS</span></td>
+                            </tr>
+                            <tr>
+                                <td class="agent-name">MMF / MPAA</td>
+                                <td>
+                                    <div class="bar-container">
+                                        <strong>82%</strong>
+                                        <div class="bar-track"><div class="bar" style="width:82%"></div></div>
+                                    </div>
+                                    <span style="font-size:0.75rem;color:#6b8f89;">95% CI 74–90%</span>
+                                </td>
+                                <td><span class="evidence-badge evidence-obs">OBS</span></td>
+                            </tr>
+                            <tr>
+                                <td class="agent-name">Cyclophosphamide</td>
+                                <td>
+                                    <div class="bar-container">
+                                        <strong>79%</strong>
+                                        <div class="bar-track"><div class="bar" style="width:79%"></div></div>
+                                    </div>
+                                    <span style="font-size:0.75rem;color:#6b8f89;">95% CI 69–89%</span>
+                                </td>
+                                <td><span class="evidence-badge evidence-obs">OBS</span></td>
+                            </tr>
+                            <tr>
+                                <td class="agent-name">Cyclosporine</td>
+                                <td>
+                                    <div class="bar-container">
+                                        <strong>40%</strong>
+                                        <div class="bar-track"><div class="bar" style="width:40%"></div></div>
+                                    </div>
+                                    <span style="font-size:0.75rem;color:#6b8f89;">95% CI 21–59%</span>
+                                </td>
+                                <td><span class="evidence-badge evidence-obs">OBS</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="info-box">
+                        <strong>Wong et al. 2024</strong> (574 patients, 28 studies of SDNS/FRNS): Rituximab was the only agent reaching statistical significance for complete remission, and had the lowest adverse-event rate. <em>Cross-agent percentages should not be over-interpreted as true efficacy differences — cohorts are heterogeneous and enriched for refractory patients.</em>
+                    </div>
+                `;
+            } else if (currentCompareView === 'durability') {
+                tableHtml = `
+                    <table class="compare-table">
+                        <thead>
+                            <tr>
+                                <th>Agent</th>
+                                <th>Durability signal</th>
+                                <th>Rank</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="agent-name">Rituximab</td>
+                                <td>
+                                    Most durable; ~36% relapse at mean 27.6 mo; relapses cluster at B-cell repopulation.
+                                    <br><span style="font-size:0.78rem;color:#6b8f89;">Durability depends on maintenance/redosing strategy — not single course.</span>
+                                </td>
+                                <td class="durability-high">🥇 High</td>
+                            </tr>
+                            <tr>
+                                <td class="agent-name">Cyclophosphamide</td>
+                                <td>
+                                    Durable; more lasting remission than CNIs, but ~50% relapse in some series. Limited to essentially one lifetime course.
+                                </td>
+                                <td class="durability-high">🥇 High</td>
+                            </tr>
+                            <tr>
+                                <td class="agent-name">Tacrolimus</td>
+                                <td>
+                                    High relapse on dose reduction/withdrawal; often needs prolonged therapy.
+                                </td>
+                                <td class="durability-low">🥉 Low</td>
+                            </tr>
+                            <tr>
+                                <td class="agent-name">Cyclosporine</td>
+                                <td>
+                                    High relapse off-drug; nephrotoxicity with long use.
+                                </td>
+                                <td class="durability-low">🥉 Low</td>
+                            </tr>
+                            <tr>
+                                <td class="agent-name">MMF / MPAA</td>
+                                <td>
+                                    Reserved for relapse despite CYC/CNI.
+                                </td>
+                                <td class="durability-mid">🥈 Mid</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="info-box warning">
+                        <strong>Durability hierarchy:</strong> Rituximab ≈ cyclophosphamide &gt; CNIs (least durable). KDIGO explicitly notes CNIs relapse during dose reduction. Cyclophosphamide durability is limited by inability to give repeated courses.
+                    </div>
+                `;
+            } else if (currentCompareView === 'safety') {
+                tableHtml = `
+                    <table class="compare-table">
+                        <thead>
+                            <tr>
+                                <th>Agent</th>
+                                <th>Adverse-event rate</th>
+                                <th>Key concerns</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="agent-name">Rituximab</td>
+                                <td>
+                                    <div class="bar-container">
+                                        <strong>0.26</strong>
+                                        <div class="bar-track"><div class="bar" style="width:26%; background:#047857;"></div></div>
+                                    </div>
+                                    <span style="font-size:0.75rem;color:#047857;font-weight:600;">Lowest</span>
+                                </td>
+                                <td>Infusion reactions (~40%), hypogammaglobulinemia, anti-rituximab antibodies (~16%), rare PML, HBV reactivation</td>
+                            </tr>
+                            <tr>
+                                <td class="agent-name">MMF / MPAA</td>
+                                <td>
+                                    <div class="bar-container">
+                                        <strong>0.27</strong>
+                                        <div class="bar-track"><div class="bar" style="width:27%; background:#0d9488;"></div></div>
+                                    </div>
+                                </td>
+                                <td>GI upset, leukopenia, infection, teratogenicity</td>
+                            </tr>
+                            <tr>
+                                <td class="agent-name">Cyclosporine</td>
+                                <td>
+                                    <div class="bar-container">
+                                        <strong>0.39</strong>
+                                        <div class="bar-track"><div class="bar" style="width:39%; background:#b45309;"></div></div>
+                                    </div>
+                                </td>
+                                <td>Nephrotoxicity, hypertension, gingival hyperplasia, hirsutism</td>
+                            </tr>
+                            <tr>
+                                <td class="agent-name">Cyclophosphamide</td>
+                                <td>
+                                    <div class="bar-container">
+                                        <strong>0.55</strong>
+                                        <div class="bar-track"><div class="bar" style="width:55%; background:#b91c1c;"></div></div>
+                                    </div>
+                                </td>
+                                <td>Infertility, malignancy, myelosuppression, hemorrhagic cystitis, alopecia</td>
+                            </tr>
+                            <tr>
+                                <td class="agent-name">Tacrolimus</td>
+                                <td>
+                                    <div class="bar-container">
+                                        <strong>0.61</strong>
+                                        <div class="bar-track"><div class="bar" style="width:61%; background:#991b1b;"></div></div>
+                                    </div>
+                                    <span style="font-size:0.75rem;color:#991b1b;font-weight:600;">Highest</span>
+                                </td>
+                                <td>Nephrotoxicity, diabetes, tremor, hypertension</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="info-box">
+                        Adverse-event rates from Wong et al. 2024. Rituximab had the lowest rate; tacrolimus the highest. Cyclophosphamide's adverse-event rate is dominated by cumulative toxicity, which caps repeat courses.
+                    </div>
+                `;
+            }
+
+            step5Dynamic.innerHTML = toggleHtml + caveatHtml + tableHtml;
+
+            // Attach toggle listeners
+            document.querySelectorAll('#compareToggle button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentCompareView = this.dataset.view;
+                    buildStep5();
+                });
+            });
+        }
+
+        // ---------- NAVIGATION ----------
+        nextBtn.addEventListener('click', function() {
+            if (currentStep === 1) {
+                if (!patientType) return;
+                buildStep2();
+                showStep(2);
+            } else if (currentStep === 2) {
+                if (!diagnosisChoice) return;
+                buildStep3();
+                showStep(3);
+            } else if (currentStep === 3) {
+                if (!treatmentChoice) return;
+                buildStep4();
+                showStep(4);
+            } else if (currentStep === 4) {
+                buildStep5();
+                showStep(5);
+            }
+        });
+
+        backBtn.addEventListener('click', function() {
+            if (currentStep === 2) showStep(1);
+            else if (currentStep === 3) showStep(2);
+            else if (currentStep === 4) showStep(3);
+            else if (currentStep === 5) showStep(4);
+        });
+
+        resetBtn.addEventListener('click', function() {
+            resetAll();
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+        });
+
+        // initial state
+        resetAll();
+    })();
+</script>
+</body>
+</html>
